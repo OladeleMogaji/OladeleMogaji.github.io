@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oladele S. Mogaji — GIS Analyst & Geospatial Specialist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0d1117;
+      --paper: #f5f0e8;
+      --earth: #8b5e3c;
+      --sage: #5a7a5a;
+      --clay: #c4894f;
+      --mist: #b8c5b0;
+      --accent: #2d5016;
+      --light-earth: #ede4d3;
+      --grid: #e2d9c8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--clay);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 40px; height: 40px;
+      border: 1px solid var(--clay);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+      opacity: 0.5;
+    }
+    body:hover .cursor { opacity: 1; }
+
+    /* Topographic background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-radial-gradient(ellipse at 30% 40%, transparent 0, transparent 40px, rgba(90,122,90,0.04) 40px, rgba(90,122,90,0.04) 41px),
+        repeating-radial-gradient(ellipse at 70% 60%, transparent 0, transparent 60px, rgba(139,94,60,0.03) 60px, rgba(139,94,60,0.03) 61px),
+        repeating-radial-gradient(ellipse at 50% 20%, transparent 0, transparent 80px, rgba(45,80,22,0.03) 80px, rgba(45,80,22,0.03) 81px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 4rem;
+      background: rgba(245,240,232,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--grid);
+    }
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--clay); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      gap: 4rem;
+      z-index: 1;
+    }
+
+    .hero-text { max-width: 560px; }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 0.95;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+
+    .hero-name span {
+      color: var(--clay);
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--earth);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+
+    .hero-bio {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: #3a3530;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+      max-width: 480px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 1s forwards;
+    }
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.8rem;
+      border: 1px solid var(--mist);
+      border-radius: 2px;
+      color: var(--sage);
+      background: rgba(90,122,90,0.06);
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s forwards;
+    }
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 2rem;
+      background: var(--accent);
+      color: var(--paper);
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--clay); transform: translateY(-2px); }
+    .btn-outline {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 2rem;
+      background: transparent;
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid var(--ink);
+      cursor: none;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+    }
+    .btn-outline:hover { background: var(--ink); color: var(--paper); transform: translateY(-2px); }
+
+    /* Hero visual panel */
+    .hero-visual {
+      position: relative;
+      height: 560px;
+      opacity: 0;
+      animation: fadeIn 1.2s 0.6s forwards;
+    }
+
+    .map-frame {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--grid);
+      background: var(--light-earth);
+      overflow: hidden;
+    }
+
+    /* Animated SVG map graphic */
+    .map-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-grid-line {
+      stroke: var(--grid);
+      stroke-width: 0.5;
+      fill: none;
+    }
+
+    .contour {
+      fill: none;
+      stroke-width: 1;
+      opacity: 0.4;
+    }
+
+    .stat-card {
+      position: absolute;
+      background: var(--paper);
+      border: 1px solid var(--grid);
+      padding: 1rem 1.4rem;
+      font-family: 'DM Mono', monospace;
+    }
+    .stat-card .num {
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--clay);
+      display: block;
+      line-height: 1;
+    }
+    .stat-card .label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sage);
+      display: block;
+      margin-top: 0.3rem;
+    }
+    .stat-card:nth-child(2) { top: 1.5rem; right: -1.5rem; }
+    .stat-card:nth-child(3) { bottom: 3rem; left: -1.5rem; }
+
+    /* Sections common */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 4rem;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      height: 1px;
+      width: 60px;
+      background: var(--clay);
+      display: inline-block;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 3rem;
+    }
+    .section-title em {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--earth);
+    }
+
+    /* ABOUT */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .about-text p {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: #3a3530;
+      margin-bottom: 1.5rem;
+    }
+    .about-facts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .fact-item {
+      padding: 1.5rem;
+      border: 1px solid var(--grid);
+      background: var(--light-earth);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .fact-item:hover { border-color: var(--clay); transform: translateY(-4px); }
+    .fact-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--clay);
+      line-height: 1;
+      display: block;
+    }
+    .fact-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sage);
+      display: block;
+      margin-top: 0.4rem;
+    }
+
+    /* SKILLS */
+    .skills-section { background: var(--ink); }
+    .skills-section .section-label { color: var(--clay); }
+    .skills-section .section-title { color: var(--paper); }
+    .skills-section .section-title em { color: var(--mist); }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .skill-block {
+      background: var(--ink);
+      padding: 2.5rem 2rem;
+      transition: background 0.3s;
+    }
+    .skill-block:hover { background: #1a2010; }
+    .skill-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .skill-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--paper);
+      margin-bottom: 0.6rem;
+    }
+    .skill-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      line-height: 1.7;
+      color: rgba(245,240,232,0.45);
+      letter-spacing: 0.02em;
+    }
+    .skill-tools {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .skill-tool {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid rgba(196,137,79,0.3);
+      color: var(--clay);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* EXPERIENCE */
+    .experience-list { max-width: 820px; }
+    .exp-item {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--grid);
+      transition: all 0.3s;
+    }
+    .exp-item:hover { padding-left: 1rem; }
+    .exp-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--clay);
+      letter-spacing: 0.08em;
+      padding-top: 0.3rem;
+    }
+    .exp-role {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .exp-org {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--earth);
+      margin-bottom: 0.8rem;
+    }
+    .exp-desc {
+      font-size: 0.95rem;
+      line-height: 1.75;
+      color: #5a5248;
+    }
+
+    /* PROJECTS */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .project-card {
+      border: 1px solid var(--grid);
+      background: var(--light-earth);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: none;
+    }
+    .project-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(45,80,22,0.12);
+    }
+    .project-img {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-img-1 { background: linear-gradient(135deg, #2d5016 0%, #5a7a5a 100%); }
+    .project-img-2 { background: linear-gradient(135deg, #8b5e3c 0%, #c4894f 100%); }
+    .project-img-3 { background: linear-gradient(135deg, #3a5a8a 0%, #6a8abd 100%); }
+    .project-img-4 { background: linear-gradient(135deg, #5a2d5a 0%, #8a6a8a 100%); }
+    .project-img-5 { background: linear-gradient(135deg, #1a4a3a 0%, #4a8a6a 100%); }
+    .project-img-6 { background: linear-gradient(135deg, #4a3a1a 0%, #8a6a3a 100%); }
+    .project-body { padding: 1.5rem; }
+    .project-category {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 0.5rem;
+    }
+    .project-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .project-desc {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #5a5248;
+    }
+    .project-link {
+      display: inline-block;
+      margin-top: 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--clay);
+      text-decoration: none;
+      border-bottom: 1px solid var(--clay);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .project-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* CERTIFICATIONS */
+    .cert-section { background: var(--light-earth); }
+    .cert-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .cert-item {
+      padding: 1.5rem;
+      background: var(--paper);
+      border: 1px solid var(--grid);
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .cert-item:hover { border-color: var(--clay); transform: translateY(-4px); }
+    .cert-icon { font-size: 2rem; display: block; margin-bottom: 0.8rem; }
+    .cert-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    /* CONTACT */
+    .contact-section {
+      background: var(--accent);
+      text-align: center;
+    }
+    .contact-section .section-label { color: var(--clay); justify-content: center; }
+    .contact-section .section-label::after { display: none; }
+    .contact-section .section-title { color: var(--paper); }
+    .contact-section .section-title em { color: var(--mist); }
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-top: 2.5rem;
+    }
+    .contact-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.85rem 2rem;
+      text-decoration: none;
+      border: 1px solid rgba(245,240,232,0.3);
+      color: var(--paper);
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+      cursor: none;
+    }
+    .contact-btn:hover {
+      background: var(--clay);
+      border-color: var(--clay);
+      transform: translateY(-2px);
+    }
+    .contact-email {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      color: rgba(245,240,232,0.7);
+      margin-top: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--ink);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--paper);
+      opacity: 0.4;
+    }
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: rgba(245,240,232,0.3);
+      letter-spacing: 0.06em;
+    }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--grid);
+      margin: 0;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s, transform 0.8s;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 3rem; }
+      .hero-visual { display: none; }
+      section { padding: 4rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .about-facts { grid-template-columns: 1fr 1fr; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .cert-grid { grid-template-columns: 1fr 1fr; }
+      .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">DevOps-Ola</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Expertise</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">GIS Analyst · Surveyor · Project Manager</p>
+      <h1 class="hero-name">
+        Oladele<br><span>S. Mogaji</span>
+      </h1>
+      <p class="hero-title">MSc. Geospatial Science</p>
+      <p class="hero-bio">
+        From Passion to Profession — harnessing the power of geographic data to drive sustainable, data-informed decisions. I transform complex spatial datasets into clear, actionable insights for organizations that need to understand the world around them.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">GIS Analysis</span>
+        <span class="tag">Remote Sensing</span>
+        <span class="tag">Cartography</span>
+        <span class="tag">Indoor Mapping</span>
+        <span class="tag">Spatial Data</span>
+        <span class="tag">ArcGIS</span>
+      </div>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">View My Work</a>
+        <a href="#contact" class="btn-outline">Get In Touch</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="map-frame">
+        <svg class="map-svg" viewBox="0 0 500 560" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid lines -->
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2d9c8" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="500" height="560" fill="url(#grid)"/>
+          <!-- Contour lines (stylized topographic) -->
+          <ellipse cx="250" cy="280" rx="200" ry="160" class="contour" stroke="#8b5e3c"/>
+          <ellipse cx="250" cy="280" rx="160" ry="125" class="contour" stroke="#8b5e3c"/>
+          <ellipse cx="250" cy="280" rx="120" ry="90" class="contour" stroke="#8b5e3c"/>
+          <ellipse cx="250" cy="280" rx="80" ry="58" class="contour" stroke="#c4894f"/>
+          <ellipse cx="250" cy="280" rx="45" ry="30" class="contour" stroke="#c4894f" opacity="0.7"/>
+          <!-- Second elevation -->
+          <ellipse cx="380" cy="140" rx="90" ry="70" class="contour" stroke="#5a7a5a"/>
+          <ellipse cx="380" cy="140" rx="60" ry="46" class="contour" stroke="#5a7a5a"/>
+          <ellipse cx="380" cy="140" rx="32" ry="24" class="contour" stroke="#2d5016"/>
+          <!-- Third elevation -->
+          <ellipse cx="110" cy="430" rx="75" ry="55" class="contour" stroke="#5a7a5a"/>
+          <ellipse cx="110" cy="430" rx="45" ry="33" class="contour" stroke="#2d5016"/>
+          <!-- Rivers/roads -->
+          <path d="M 0,200 Q 120,220 200,280 Q 280,340 360,380 Q 420,410 500,400" fill="none" stroke="#3a5a8a" stroke-width="1.5" opacity="0.5"/>
+          <path d="M 0,320 Q 80,310 150,290 Q 220,270 280,240 Q 350,200 500,190" fill="none" stroke="#3a5a8a" stroke-width="1" opacity="0.3"/>
+          <!-- Data points / markers -->
+          <circle cx="250" cy="280" r="6" fill="#c4894f"/>
+          <circle cx="250" cy="280" r="14" fill="none" stroke="#c4894f" stroke-width="1" opacity="0.5"/>
+          <circle cx="250" cy="280" r="22" fill="none" stroke="#c4894f" stroke-width="0.5" opacity="0.3">
+            <animate attributeName="r" from="22" to="38" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="380" cy="140" r="4" fill="#5a7a5a"/>
+          <circle cx="380" cy="140" r="10" fill="none" stroke="#5a7a5a" stroke-width="1" opacity="0.4"/>
+          <circle cx="110" cy="430" r="4" fill="#5a7a5a"/>
+          <circle cx="110" cy="430" r="10" fill="none" stroke="#5a7a5a" stroke-width="1" opacity="0.4"/>
+          <!-- Coordinate labels -->
+          <text x="10" y="556" font-family="monospace" font-size="9" fill="#8b5e3c" opacity="0.5">40.6501°N  90.7337°W</text>
+          <text x="10" y="15" font-family="monospace" font-size="9" fill="#8b5e3c" opacity="0.5">GEOSPATIAL ANALYSIS — O.S. MOGAJI</text>
+        </svg>
+      </div>
+      <div class="stat-card">
+        <span class="num">10+</span>
+        <span class="label">Years Experience</span>
+      </div>
+      <div class="stat-card">
+        <span class="num">MSc</span>
+        <span class="label">Geospatial Science</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-label">About Me</div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <h2 class="section-title">Mapping the world,<br><em>one dataset at a time</em></h2>
+        <p>I'm a versatile geospatial professional with a deep passion for using geographic information systems to reveal patterns hidden in spatial data. My journey spans from precision surveying in the field to building complex analytical workflows in GIS environments.</p>
+        <p>As a GIS Analyst, I specialize in harnessing geographic data to provide crucial insights for informed decision-making — whether that's urban planning, environmental monitoring, infrastructure assessment, or indoor facility mapping.</p>
+        <p>With my background in surveying, I bring a rigorous, measurement-first mindset to every project, ensuring data accuracy and spatial integrity from collection to delivery.</p>
+        <a href="https://sites.google.com/wiu.edu/oladelesmogaji/meet-oladele" class="btn-outline" style="display:inline-block; margin-top:1rem;">Full Bio →</a>
+      </div>
+      <div class="about-facts reveal">
+        <div class="fact-item">
+          <span class="fact-num">MSc</span>
+          <span class="fact-desc">Geospatial Science — WIU</span>
+        </div>
+        <div class="fact-item">
+          <span class="fact-num">BSc</span>
+          <span class="fact-desc">Surveying & Geoinformatics</span>
+        </div>
+        <div class="fact-item">
+          <span class="fact-num">10+</span>
+          <span class="fact-desc">Years in GIS & Surveying</span>
+        </div>
+        <div class="fact-item">
+          <span class="fact-num">IL</span>
+          <span class="fact-desc">Kalamazoo / Illinois Region</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SKILLS -->
+  <section id="skills" class="skills-section">
+    <div class="section-label">Core Expertise</div>
+    <h2 class="section-title" style="margin-bottom:2.5rem;">What I <em>bring to the table</em></h2>
+    <div class="skills-grid reveal">
+      <div class="skill-block">
+        <span class="skill-icon">🗺️</span>
+        <div class="skill-name">GIS Analysis</div>
+        <div class="skill-desc">Spatial data processing, geostatistics, terrain modeling, and geographic insight generation from complex datasets.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">ArcGIS Pro</span>
+          <span class="skill-tool">QGIS</span>
+          <span class="skill-tool">ArcGIS Online</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <span class="skill-icon">📡</span>
+        <div class="skill-name">Remote Sensing</div>
+        <div class="skill-desc">Satellite and aerial imagery analysis, classification, change detection, and environmental monitoring.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">ENVI</span>
+          <span class="skill-tool">Google Earth Engine</span>
+          <span class="skill-tool">Landsat</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <span class="skill-icon">🏢</span>
+        <div class="skill-name">Indoor Mapping</div>
+        <div class="skill-desc">Interior facility mapping using ArcGIS Indoors, floor plan digitization, and building information integration.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">ArcGIS Indoors</span>
+          <span class="skill-tool">CAD Integration</span>
+          <span class="skill-tool">BIM</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <span class="skill-icon">🧭</span>
+        <div class="skill-name">Field Surveying</div>
+        <div class="skill-desc">Precise ground truth data collection, GPS/GNSS surveys, boundary determination and topographic measurement.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">Total Station</span>
+          <span class="skill-tool">GPS/GNSS</span>
+          <span class="skill-tool">RTK</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <span class="skill-icon">🎨</span>
+        <div class="skill-name">Cartography</div>
+        <div class="skill-desc">Professional map design, thematic mapping, atlas production and data visualization for print and digital media.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">ArcGIS Pro</span>
+          <span class="skill-tool">Illustrator</span>
+          <span class="skill-tool">StoryMaps</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <span class="skill-icon">📊</span>
+        <div class="skill-name">Project Management</div>
+        <div class="skill-desc">End-to-end geospatial project oversight, stakeholder coordination, and delivery of results with precision.</div>
+        <div class="skill-tools">
+          <span class="skill-tool">Agile GIS</span>
+          <span class="skill-tool">PMBOK</span>
+          <span class="skill-tool">Reporting</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="section-label">Experience</div>
+    <h2 class="section-title">Professional <em>journey</em></h2>
+    <div class="experience-list">
+      <div class="exp-item reveal">
+        <div class="exp-date">2022 — Present</div>
+        <div>
+          <div class="exp-role">GIS Analyst / Graduate Research Assistant</div>
+          <div class="exp-org">Western Illinois University, Macomb, IL</div>
+          <div class="exp-desc">Conducting advanced geospatial research in indoor mapping and spatial data analysis. Developing ArcGIS Indoors workflows, creating digital atlases of Illinois, and supporting faculty GIS research projects with data collection, processing, and visualization.</div>
+        </div>
+      </div>
+      <div class="exp-item reveal">
+        <div class="exp-date">2018 — 2022</div>
+        <div>
+          <div class="exp-role">Geospatial Analyst & Project Coordinator</div>
+          <div class="exp-org">Nigeria / West Africa Region</div>
+          <div class="exp-desc">Led geospatial analysis and surveying projects across multiple sectors including infrastructure, urban planning, and environmental monitoring. Coordinated field teams, managed data pipelines from collection to final deliverables, and produced professional-grade cartographic outputs.</div>
+        </div>
+      </div>
+      <div class="exp-item reveal">
+        <div class="exp-date">2014 — 2018</div>
+        <div>
+          <div class="exp-role">Surveyor & GIS Technician</div>
+          <div class="exp-org">Land & Infrastructure Projects, Nigeria</div>
+          <div class="exp-desc">Performed precision field surveys using Total Station and GPS/GNSS equipment. Processed survey data and integrated results into GIS platforms for infrastructure and land use planning projects.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label">Selected Work</div>
+    <h2 class="section-title">Projects & <em>research</em></h2>
+    <div class="projects-grid">
+      <div class="project-card reveal">
+        <div class="project-img project-img-1">🏛️</div>
+        <div class="project-body">
+          <div class="project-category">Indoor Mapping</div>
+          <div class="project-title">WIU Indoor Facility Maps</div>
+          <div class="project-desc">ArcGIS Indoors-based mapping of Western Illinois University campus buildings, enabling indoor navigation and facility management integration.</div>
+          <a href="https://sites.google.com/wiu.edu/oladelesmogaji/indoor-mapping" class="project-link">View Project →</a>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-img project-img-2">🗾</div>
+        <div class="project-body">
+          <div class="project-category">Cartography</div>
+          <div class="project-title">Digital Atlas of Illinois</div>
+          <div class="project-desc">Comprehensive digital atlas combining demographic, geographic, and environmental data layers across the state of Illinois with thematic cartographic design.</div>
+          <a href="https://sites.google.com/wiu.edu/oladelesmogaji/digital-atlas-of-illinios" class="project-link">View Project →</a>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-img project-img-3">🌍</div>
+        <div class="project-body">
+          <div class="project-category">StoryMaps</div>
+          <div class="project-title">Interactive Story Map</div>
+          <div class="project-desc">An immersive ArcGIS StoryMap narrating geographic insights through interactive maps, multimedia content, and spatial storytelling.</div>
+          <a href="https://storymaps.arcgis.com/stories/41a175dada894264ae3b3887c63d21b9" class="project-link">View Story Map →</a>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-img project-img-4">📐</div>
+        <div class="project-body">
+          <div class="project-category">Survey Project</div>
+          <div class="project-title">Field Survey & Data Collection</div>
+          <div class="project-desc">Ground control point surveys and precision measurement campaigns supporting GIS data accuracy validation and spatial reference establishment.</div>
+          <a href="https://sites.google.com/wiu.edu/oladelesmogaji/survey-project" class="project-link">View Project →</a>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-img project-img-5">🖥️</div>
+        <div class="project-body">
+          <div class="project-category">GIS Hands-On</div>
+          <div class="project-title">Applied GIS Workflows</div>
+          <div class="project-desc">Practical GIS skill demonstrations including network analysis, spatial statistics, raster analysis, and geodatabase management in ArcGIS Pro.</div>
+          <a href="https://sites.google.com/wiu.edu/oladelesmogaji/gis-hands-on" class="project-link">View Project →</a>
+        </div>
+      </div>
+      <div class="project-card reveal">
+        <div class="project-img project-img-6">🗺️</div>
+        <div class="project-body">
+          <div class="project-category">Cartographic Design</div>
+          <div class="project-title">Professional Map Portfolio</div>
+          <div class="project-desc">A curated collection of cartographic work spanning thematic maps, reference maps, and data-driven visualizations designed to communicate spatial insights clearly.</div>
+          <a href="https://sites.google.com/wiu.edu/oladelesmogaji/cartography" class="project-link">View Maps →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section class="cert-section">
+    <div class="section-label">Credentials</div>
+    <h2 class="section-title">Certifications & <em>education</em></h2>
+    <div class="cert-grid reveal">
+      <div class="cert-item">
+        <span class="cert-icon">🎓</span>
+        <div class="cert-name">MSc Geospatial Science<br>Western Illinois University</div>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">🏅</span>
+        <div class="cert-name">Esri ArcGIS<br>Certified Specialist</div>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">📍</span>
+        <div class="cert-name">BSc Surveying &<br>Geoinformatics</div>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">🛰️</span>
+        <div class="cert-name">Remote Sensing &<br>Image Analysis</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact-section">
+    <div class="section-label">Get In Touch</div>
+    <h2 class="section-title">Let's work <em>together</em></h2>
+    <p style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:rgba(245,240,232,0.7); max-width:500px; margin:0 auto; line-height:1.8;">
+      Open to GIS analyst roles, geospatial consulting, research collaborations, and project opportunities.
+    </p>
+    <p class="contact-email">o-mogaji@wiu.edu</p>
+    <div class="contact-links">
+      <a href="mailto:o-mogaji@wiu.edu" class="contact-btn">✉ Email Me</a>
+      <a href="https://www.linkedin.com/in/oladele-s-mogaji-302729124" class="contact-btn" target="_blank">LinkedIn</a>
+      <a href="https://storymaps.arcgis.com/stories/41a175dada894264ae3b3887c63d21b9" class="contact-btn" target="_blank">Story Map</a>
+      <a href="https://arcg.is/1XuPXb0" class="contact-btn" target="_blank">ArcGIS Portfolio</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">Oladele S. Mogaji</div>
+    <div class="footer-copy">© 2025 · GIS Analyst · Surveyor · Project Manager</div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+      setTimeout(() => {
+        ring.style.left = e.clientX + 'px';
+        ring.style.top = e.clientY + 'px';
+      }, 80);
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '20px';
+        cursor.style.height = '20px';
+        ring.style.width = '60px';
+        ring.style.height = '60px';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '12px';
+        cursor.style.height = '12px';
+        ring.style.width = '40px';
+        ring.style.height = '40px';
+      });
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
